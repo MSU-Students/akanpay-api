@@ -13,7 +13,11 @@ export class UserService {
         {id: 4, name: 'Nami', username: 'navigator', password: '1234'}
     ];
     findAll() {
-        return this.userList;
+        return this.userList.map(user => {
+            const {password: _noUse, ...data} = user;
+            
+            return data;
+        });
     }
     async findOne(username: string): Promise<User | undefined> {
         return this.userList.find(user => user.username === username);
