@@ -1,33 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { User } from 'src/entities';
 import { Role } from 'src/enums';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
+    constructor(
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
+    ) {
+    }
     
-    private userList: User[] = [
-        {id: 1, name: 'Luffy', username: 'captain', password: '1234', roles: [Role.Admin]}, 
-        {id: 2, name: 'Zoro', username: 'sword', password: '1234'}, 
-        {id: 3, name: 'Usop', username: 'sniper', password: '1234'}, 
-        {id: 4, name: 'Nami', username: 'navigator', password: '1234'}
-    ];
-    findAll() {
-        return this.userList.map(user => {
-            const {password: _noUse, ...data} = user;
-            
-            return data;
+    
+    async findAll() {
+        return this.usersRepository.find()
+    }
+    async findOne(username: string): Promise<User | null> {
+        return this.usersRepository.findOne({
+            where: {
+                username: username
+            }
         });
     }
-    async findOne(username: string): Promise<User | undefined> {
-        return this.userList.find(user => user.username === username);
-    }
     async create(createDto: CreateUserDto): Promise<User> {
-        const record = {
-            ...createDto,
-            id: this.userList.length
-        };
-        this.userList.push(record);
-        return record;
+        const user = this.usersRepository.create(createDto);
+        return this.usersRepository.save(user);
     }
 }

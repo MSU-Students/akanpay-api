@@ -1,9 +1,16 @@
 import { Role } from 'src/enums';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-export interface User {
+@Entity()
+export class User {
+    @PrimaryGeneratedColumn()
     id: number;
+    @Column()
     name: string;
+    @Column()
     username: string;
+    @Column()
     password: string;
+
     roles?: Role[];
 }

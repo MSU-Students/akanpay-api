@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Roles } from 'src/decorators';
+import { Anonymous, Roles } from 'src/decorators';
 import { Role } from 'src/enums';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { RolesGuard } from 'src/guards';
@@ -12,15 +12,17 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class UserController {
     constructor(private readonly service: UserService) { }
     @Get()
-    @Roles(Role.User, Role.Admin)
+    // @Roles(Role.User, Role.Admin)
+    @Anonymous()
     findAll() {
         return this.service.findAll();
     }
     
     @Post()
-    @Roles(Role.Admin)
+    // @Roles(Role.Admin)
+    @Anonymous()
     create(@Body() createDto: CreateUserDto) {
-        this.service.create(createDto);
+        return this.service.create(createDto);
     }
 
 }
