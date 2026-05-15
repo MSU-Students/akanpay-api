@@ -17,7 +17,7 @@ import { User } from './entities';
       port: 5432,
       username: 'root',
       password: 'rootpass',
-      database: 'myservice-db',
+      database: 'akanpay-db',
       entities: [User],
       synchronize: true
     }),

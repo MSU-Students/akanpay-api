@@ -6,8 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('My Web Service')
-    .setDescription('The My first API')
+    .setTitle('Akan Pay Web Service')
+    .setDescription('Akan Pay API')
     .setVersion('1.0')
     .addTag('web-service')
     .addTag('restful')
