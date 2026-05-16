@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -24,11 +25,22 @@ import * as Joi from 'joi';
         DB_NAME: Joi.string().required(),
         DB_SYNC: Joi.boolean().default(false),
         JWT_SECRET: Joi.string().min(32).required(),
-        JWT_EXPIRES_IN: Joi.string().default('600s')
+        JWT_EXPIRES_IN: Joi.string().default('600s'),
+        JWT_REFRESH_SECRET: Joi.string().min(32).required(),
+        JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
+        THROTTLE_TTL: Joi.number().integer().min(1).default(60),
+        THROTTLE_LIMIT: Joi.number().integer().min(1).default(10)
       }),
       validationOptions: {
         abortEarly: false
       }
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        ttl: config.getOrThrow<number>('THROTTLE_TTL'),
+        limit: config.getOrThrow<number>('THROTTLE_LIMIT')
+      }]
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
