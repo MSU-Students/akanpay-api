@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Role } from 'src/enums';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -7,10 +8,19 @@ export class User {
     id: number;
     @Column()
     name: string;
-    @Column()
+    @Column({ unique: true })
     username: string;
     @Column()
+    @Exclude()
     password: string;
-
-    roles?: Role[];
+    @Column({ type: 'text', nullable: true })
+    @Exclude()
+    refreshTokenHash: string | null;
+    @Column({
+        type: 'enum',
+        enum: Role,
+        array: true,
+        default: [Role.User]
+    })
+    roles: Role[];
 }
