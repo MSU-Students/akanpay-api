@@ -3,14 +3,21 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import type { StringValue } from 'ms';
 
 @Module({
   imports: [
     UserModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: 'THE QUICK BROWN FOX JUMPS OVER THE SUN, HAHA',
-      signOptions: { expiresIn: '600s' },
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.getOrThrow<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: config.get<string>('JWT_EXPIRES_IN', '600s') as StringValue
+        }
+      })
     }),
   ],
   controllers: [AuthController],
