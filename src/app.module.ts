@@ -8,20 +8,27 @@ import { RolesGuard } from './guards';
 import { AuthGuard } from './auth/auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'root',
-      password: 'rootpass',
-      database: 'akanpay-db',
-      entities: [User],
-      synchronize: true
+    ConfigModule.forRoot({
+      isGlobal: true
     }),
-    UserModule, 
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_HOST', 'localhost'),
+        port: config.get<number>('DB_PORT', 5432),
+        username: config.get<string>('DB_USER', 'root'),
+        password: config.get<string>('DB_PASSWORD', 'rootpass'),
+        database: config.get<string>('DB_NAME', 'akanpay-db'),
+        entities: [User],
+        synchronize: config.get<boolean>('DB_SYNC', true)
+      })
+    }),
+    UserModule,
     AuthModule
   ],
   controllers: [AppController],
