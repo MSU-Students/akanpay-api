@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -10,9 +9,11 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_ANONYMOUS } from 'src/decorators';
 
+import  { AuthService } from './auth.service';
+
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService, private reflector: Reflector) {}
+  constructor(private readonly jwtService: JwtService, private reflector: Reflector, private readonly authService: AuthService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isAnonymous = this.reflector.getAllAndOverride<boolean>(IS_ANONYMOUS, [
@@ -34,10 +35,19 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token);
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
+      
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException();
     }
+
+    // check blocklist AFTER the try-catch
+    const payload = request['user'];
+    if (payload?.jti && this.authService.isBlocklisted(payload.jti)) {
+      throw new UnauthorizedException();
+    }
+
+
     return true;
   }
 
