@@ -6,13 +6,18 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcryptjs';
 import type { StringValue } from 'ms';
 
-import { v4 as uuidv4 } from 'uuid' //for generation of uid (jti) of blocklist for each token
+import { v4 as uuidv4 } from 'uuid';
+
+type JwtPayload = {
+    sub: number;
+    username: string;
+    roles: string[];
+    tokenVersion: number;
+    jti?: string;
+};
 
 @Injectable()
 export class AuthService {
-    private blocklist = new Set<string>(); //
-
-
     constructor(
         private readonly userService: UserService,
         private jwtService: JwtService,
@@ -28,17 +33,17 @@ export class AuthService {
         if (!passwordMatches) {
             throw new UnauthorizedException();
         }
-        return this.issueTokens(user.id, user.username, user.roles || []);
+        return this.issueTokens(user.id, user.username, user.roles || [], user.tokenVersion);
     }
 
     async register(createDto: CreateUserDto) {
         const user = await this.userService.create(createDto);
-        return this.issueTokens(user.id, user.username, user.roles || []);
+        return this.issueTokens(user.id, user.username, user.roles || [], user.tokenVersion);
     }
 
     async refresh(refreshToken: string) {
         const refreshSecret = this.config.getOrThrow<string>('JWT_REFRESH_SECRET');
-        let payload: { sub: number; username: string; roles: string[] };
+        let payload: JwtPayload;
         try {
             payload = await this.jwtService.verifyAsync(refreshToken, {
                 secret: refreshSecret
@@ -51,35 +56,35 @@ export class AuthService {
         if (!user || !user.refreshTokenHash) {
             throw new UnauthorizedException();
         }
+        if (user.tokenVersion !== payload.tokenVersion) {
+            throw new UnauthorizedException();
+        }
 
         const tokenMatches = await bcrypt.compare(refreshToken, user.refreshTokenHash);
         if (!tokenMatches) {
             throw new UnauthorizedException();
         }
 
-        return this.issueTokens(user.id, user.username, user.roles || []);
+        return this.issueTokens(user.id, user.username, user.roles || [], user.tokenVersion);
     }
 
-    async logout(userId?: number, jti?: string) {
+    async logout(userId?: number) {
         if (!userId) {
             throw new UnauthorizedException();
         }
-        if (jti) this.blocklist.add(jti); //marks this uuid generated token as blocked
+        await this.userService.incrementTokenVersion(userId);
         await this.userService.clearRefreshToken(userId);
         return { success: true };
     }
 
-    isBlocklisted(jti: string): boolean {
-        return this.blocklist.has(jti);
-    }
-
-    private async issueTokens(userId: number, username: string, roles: string[]) {
-        const accessPayload = { sub: userId, username, roles, jti: uuidv4() }; //added as well in payload
+    private async issueTokens(userId: number, username: string, roles: string[], tokenVersion: number) {
+        const accessPayload = { sub: userId, username, roles, tokenVersion, jti: uuidv4() };
         const access_token = await this.jwtService.signAsync(accessPayload);
 
         const refreshSecret = this.config.getOrThrow<string>('JWT_REFRESH_SECRET');
         const refreshExpiresIn = this.config.getOrThrow<string>('JWT_REFRESH_EXPIRES_IN') as StringValue;
-        const refresh_token = await this.jwtService.signAsync(accessPayload, {
+        const refreshPayload = { ...accessPayload, jti: uuidv4() };
+        const refresh_token = await this.jwtService.signAsync(refreshPayload, {
             secret: refreshSecret,
             expiresIn: refreshExpiresIn
         });

@@ -54,4 +54,8 @@ export class UserService {
     async clearRefreshToken(userId: number): Promise<void> {
         await this.usersRepository.update(userId, { refreshTokenHash: null });
     }
+
+    async incrementTokenVersion(userId: number): Promise<void> {
+        await this.usersRepository.increment({ id: userId }, 'tokenVersion', 1);
+    }
 }

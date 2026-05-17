@@ -16,6 +16,8 @@ export class User {
     @Column({ type: 'text', nullable: true })
     @Exclude()
     refreshTokenHash: string | null;
+    @Column({ type: 'int', default: 0 })
+    tokenVersion: number;
     @Column({
         type: 'enum',
         enum: Role,
