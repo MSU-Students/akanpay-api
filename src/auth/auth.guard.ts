@@ -24,14 +24,14 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private reflector: Reflector,
-    private readonly userService: UserService
+    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isAnonymous = this.reflector.getAllAndOverride<boolean>(IS_ANONYMOUS, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const isAnonymous = this.reflector.getAllAndOverride<boolean>(
+      IS_ANONYMOUS,
+      [context.getHandler(), context.getClass()],
+    );
     if (isAnonymous) {
       return true;
     }
