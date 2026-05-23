@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { User } from 'src/entities';
@@ -50,6 +50,16 @@ export class UserService {
       roles: [Role.Student],          
     });
     return this.usersRepository.save(user);
+  }
+
+  // created function for admin to assign roles to other users based on their IDNumber
+  async assignRoleByIDNumber(IDNumber: string, roles: Role[]): Promise<User> {
+    const user = await this.findByIDNumber(IDNumber);
+    if (!user) throw new NotFoundException(`Student with ID ${IDNumber} not found`);
+    await this.usersRepository.update(user.id, { roles });
+    const updated = await this.findById(user.id);
+    if (!updated) throw new NotFoundException(`User not found after update`);
+    return updated;
   }
 
   async setRefreshToken(userId: number, refreshToken: string): Promise<void> {
