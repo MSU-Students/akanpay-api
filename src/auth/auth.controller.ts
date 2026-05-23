@@ -30,8 +30,9 @@ export class AuthController {
   @ApiOkResponse({ type: AuthTokensDto })
   @Post('login')
   login(@Body() signInDto: LoginDto) {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+    return this.authService.signIn(signInDto.IDNumber, signInDto.password);
   }
+
   @Anonymous()
   @Throttle({ default: { limit: 3, ttl: ONE_MINUTE_MS } })
   @ApiOkResponse({ type: AuthTokensDto })

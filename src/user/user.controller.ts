@@ -12,7 +12,7 @@ export class UserController {
   constructor(private readonly service: UserService) {}
 
   @Get()
-  @Roles(Role.User, Role.Admin)
+  @Roles(Role.Student, Role.Admin)
   @ApiOkResponse({ type: UserResponseDto, isArray: true })
   async findAll() {
     const users = await this.service.findAll();

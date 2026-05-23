@@ -6,23 +6,32 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
-  name: string;
+
+  @Column({ unique: true })
+  IDNumber: string;         
+
   @Column({ unique: true })
   username: string;
+
+  @Column({ unique: true })
+  email: string;            
+
   @Column()
   @Exclude()
   password: string;
+
   @Column({ type: 'text', nullable: true })
   @Exclude()
   refreshTokenHash: string | null;
+
   @Column({ type: 'int', default: 0 })
   tokenVersion: number;
+
   @Column({
     type: 'enum',
     enum: Role,
     array: true,
-    default: [Role.User],
+    default: [Role.Student],  
   })
   roles: Role[];
 }

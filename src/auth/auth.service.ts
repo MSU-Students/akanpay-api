@@ -23,8 +23,8 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signIn(username: string, pass: string): Promise<any> {
-    const user = await this.userService.findOne(username);
+  async signIn(IDNumber: string, pass: string): Promise<any> {
+    const user = await this.userService.findByIDNumber(IDNumber);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -34,7 +34,9 @@ export class AuthService {
     }
     return this.issueTokens(
       user.id,
+      user.IDNumber,
       user.username,
+      user.email,
       user.roles || [],
       user.tokenVersion,
     );
@@ -44,7 +46,9 @@ export class AuthService {
     const user = await this.userService.create(createDto);
     return this.issueTokens(
       user.id,
+      user.IDNumber,
       user.username,
+      user.email,
       user.roles || [],
       user.tokenVersion,
     );
@@ -79,7 +83,9 @@ export class AuthService {
 
     return this.issueTokens(
       user.id,
+      user.IDNumber,
       user.username,
+      user.email,
       user.roles || [],
       user.tokenVersion,
     );
@@ -96,13 +102,17 @@ export class AuthService {
 
   private async issueTokens(
     userId: number,
+    IDNumber: string,
     username: string,
+    email: string,
     roles: string[],
     tokenVersion: number,
   ) {
     const accessPayload = {
       sub: userId,
+      IDNumber,
       username,
+      email,
       roles,
       tokenVersion,
       jti: randomUUID(),

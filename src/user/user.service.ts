@@ -23,6 +23,14 @@ export class UserService {
       },
     });
   }
+
+  async findByIDNumber(IDNumber: string): Promise<User | null> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.IDNumber = :IDNumber', { IDNumber })
+      .getOne();
+  }
+
   async findById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({
       where: {
@@ -30,16 +38,16 @@ export class UserService {
       },
     });
   }
+  
+  
   async create(createDto: CreateUserDto): Promise<User> {
-    const existing = await this.findOne(createDto.username);
-    if (existing) {
-      throw new ConflictException('Username already exists');
-    }
-    const passwordHash = await bcrypt.hash(createDto.password, 10);
+    const hashedPassword = await bcrypt.hash(createDto.password, 10);
     const user = this.usersRepository.create({
-      ...createDto,
-      password: passwordHash,
-      roles: [Role.User],
+      IDNumber: createDto.IDNumber,   
+      username: createDto.username,
+      email: createDto.email,         
+      password: hashedPassword,
+      roles: [Role.Student],          
     });
     return this.usersRepository.save(user);
   }
