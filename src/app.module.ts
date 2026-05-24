@@ -4,11 +4,12 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
+import { VendorModule } from './vendor/vendor.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards';
 import { AuthGuard } from './auth/auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities';
+import { User, Vendor } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -80,7 +81,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
           username: config.getOrThrow<string>('DB_USER'),
           password: config.getOrThrow<string>('DB_PASSWORD'),
           database: config.getOrThrow<string>('DB_NAME'),
-          entities: [User],
+          entities: [User, Vendor],
           synchronize: dbSync,
           migrations: ['dist/migrations/*.js'],
           migrationsRun: migrationsRun && !dbSync,
@@ -90,6 +91,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     UserModule,
     AuthModule,
     HealthModule,
+    VendorModule,
   ],
   controllers: [AppController],
   providers: [
