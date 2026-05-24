@@ -21,7 +21,7 @@ export class UserController {
   }
 
   @Post()
-  @Roles(Role.Admin, Role.Faculty) //only admin and faculty can create users (for faculty, they can create for students since it is default for students)
+  @Roles(Role.Admin) //only admin can create users
   @ApiOkResponse({ type: UserResponseDto })
   async create(@Body() createDto: CreateUserDto) {
     const user = await this.userService.create(createDto);

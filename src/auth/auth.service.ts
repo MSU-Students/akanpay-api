@@ -24,7 +24,7 @@ export class AuthService {
   ) {}
 
   async signIn(IDNumber: string, pass: string): Promise<any> {
-    const user = await this.userService.findByIDNumber(IDNumber);
+    const user = await this.userService.findByIDNumber(IDNumber);  // find the user by their IDNumber 
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -39,7 +39,7 @@ export class AuthService {
       user.email,
       user.roles || [],
       user.tokenVersion,
-    );
+    ); //then if the password is correct, issue tokens with the user's IDNumber and other info in the payload
   }
 
   async register(createDto: CreateUserDto) {
@@ -100,6 +100,7 @@ export class AuthService {
     return { success: true };
   }
 
+  // a method of issueTokens which is used to check the payload then issue a new access and refresh tokens, used in both login and register
   private async issueTokens(
     userId: number,
     IDNumber: string,

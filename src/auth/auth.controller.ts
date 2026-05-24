@@ -30,7 +30,7 @@ export class AuthController {
   @ApiOkResponse({ type: AuthTokensDto })
   @Post('login')
   login(@Body() signInDto: LoginDto) {
-    return this.authService.signIn(signInDto.IDNumber, signInDto.password);
+    return this.authService.signIn(signInDto.IDNumber, signInDto.password);  // pass the IDNumber and password to the service for authentication
   }
 
   @Anonymous()

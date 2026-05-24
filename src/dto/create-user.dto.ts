@@ -5,7 +5,7 @@ export class CreateUserDto {
   @ApiProperty({ example: '20261234' })
   @IsString()
   @IsNotEmpty()
-  IDNumber: string;
+  IDNumber: string;  // added this field in the schema for dto
 
   @ApiProperty()
   @IsString()
@@ -14,7 +14,7 @@ export class CreateUserDto {
 
   @ApiProperty()
   @IsEmail()
-  email: string;
+  email: string;  // also this
 
   @ApiProperty({
     description: 'Min 8 chars with uppercase, lowercase, and a number',

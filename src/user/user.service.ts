@@ -24,6 +24,7 @@ export class UserService {
     });
   }
 
+  // added this function to find user by their IDNumber, meant to be used for authentication and role assignment
   async findByIDNumber(IDNumber: string): Promise<User | null> {
     return this.usersRepository
       .createQueryBuilder('user')

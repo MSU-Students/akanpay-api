@@ -8,13 +8,13 @@ export class User {
   id: number;
 
   @Column({ unique: true })
-  IDNumber: string;         
+  IDNumber: string;         // added a column
 
   @Column({ unique: true })
   username: string;
 
   @Column({ unique: true })
-  email: string;            
+  email: string;           // also this  
 
   @Column()
   @Exclude()
@@ -31,7 +31,7 @@ export class User {
     type: 'enum',
     enum: Role,
     array: true,
-    default: [Role.Student],  
+    default: [Role.Student],  //changed user to Student by default
   })
   roles: Role[];
 }
