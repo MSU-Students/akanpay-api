@@ -13,7 +13,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @Roles(Role.Student, Role.Admin)
+  @Roles(Role.Student, Role.Admin, Role.Faculty) 
   @ApiOkResponse({ type: UserResponseDto, isArray: true })
   async findAll() {
     const users = await this.userService.findAll();
@@ -21,7 +21,7 @@ export class UserController {
   }
 
   @Post()
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.Faculty) //only admin and faculty can create users (for faculty, they can create for students since it is default for students)
   @ApiOkResponse({ type: UserResponseDto })
   async create(@Body() createDto: CreateUserDto) {
     const user = await this.userService.create(createDto);
