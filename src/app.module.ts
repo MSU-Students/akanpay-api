@@ -12,6 +12,7 @@ import { User } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { VendorModule } from './vendor/vendor.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     UserModule,
     AuthModule,
     HealthModule,
+    VendorModule,
   ],
   controllers: [AppController],
   providers: [
