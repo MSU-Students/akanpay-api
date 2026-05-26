@@ -9,7 +9,7 @@ export class Vendor {
   businessName: string;
 
   @Column({ type: 'varchar', length: 50, unique: true })
-  vendorCode: string; // e.g., "MSU-CAF-01"
+  vendorCode: string;
 
   @Column({ type: 'varchar', length: 255 })
   ownerName: string;
@@ -18,21 +18,20 @@ export class Vendor {
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
-  passwordHash: string; // Enforced encryption for authentication
+  passwordHash: string; 
 
   @Column({ type: 'varchar', length: 50, default: 'PENDING' })
-  status: string; // PENDING, ACTIVE, SUSPENDED
+  status: string; 
 
   @Column({ type: 'varchar', length: 20, default: 'VENDOR' })
-  role: string; // For Role-Based Access Control (RBAC)
+  role: string; 
 
   /* =======================================================
      DATABASE SECURITY REQUIREMENT: Encryption at Rest
-     We store highly sensitive data as a raw text hash/cipher.
-     We will use a CryptoService to encrypt/decrypt this.
+     We store highly sensitive GCash data as raw ciphertext.
      ======================================================= */
   @Column({ type: 'text' })
-  encryptedBankAccount: string;
+  encryptedGcashNumber: string;
 
   @CreateDateColumn()
   createdAt: Date;
