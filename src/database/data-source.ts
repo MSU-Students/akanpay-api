@@ -1,10 +1,15 @@
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
-import { User } from '../entities';
+import * as path from 'path';
+import { User, Vendor, VendorTransaction, VendorUser } from '../entities';
 
 config();
 
 const dbSync = process.env.DB_SYNC === 'true';
+const isCompiled = __filename.endsWith('.js');
+const migrationsDir = isCompiled
+  ? path.join(__dirname, '..', 'migrations', '*.js')
+  : path.join(__dirname, '..', 'migrations', '*.ts');
 
 export default new DataSource({
   type: 'postgres',
@@ -13,7 +18,7 @@ export default new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User],
-  migrations: ['src/migrations/*.ts'],
+  entities: [User, Vendor, VendorUser, VendorTransaction],
+  migrations: [migrationsDir],
   synchronize: dbSync,
 });
