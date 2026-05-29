@@ -32,6 +32,7 @@ export class AuthController {
   login(@Body() signInDto: LoginDto) {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
+
   @Anonymous()
   @Throttle({ default: { limit: 3, ttl: ONE_MINUTE_MS } })
   @ApiOkResponse({ type: AuthTokensDto })
@@ -39,6 +40,7 @@ export class AuthController {
   register(@Body() createDto: CreateUserDto) {
     return this.authService.register(createDto);
   }
+
   @Anonymous()
   @Throttle({ default: { limit: 5, ttl: ONE_MINUTE_MS } })
   @HttpCode(HttpStatus.OK)
@@ -47,11 +49,15 @@ export class AuthController {
   refresh(@Body() refreshDto: RefreshTokenDto) {
     return this.authService.refresh(refreshDto.refreshToken);
   }
+
   @ApiBearerAuth()
   @Post('logout')
-  logout(@Request() req) {
-    return this.authService.logout(req.user?.sub);
+  async logout(@Request() req) {
+    // Explicitly awaiting ensures the DB operations finish completely
+    // before the HTTP response cycle terminates.
+    return await this.authService.logout(req.user?.sub);
   }
+
   @ApiBearerAuth()
   @Get('profile')
   getProfile(@Request() req) {
