@@ -53,11 +53,7 @@ export class AuthGuard implements CanActivate {
     }
     let payload: JwtPayload;
     try {
-      // 💡 Here the JWT secret key that's used for verifying the payload
-      // is the key that was passed in the JwtModule
       payload = await this.jwtService.verifyAsync(token);
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
     } catch {
       throw new UnauthorizedException();
     }
@@ -72,11 +68,16 @@ export class AuthGuard implements CanActivate {
   }
 
   private async getTokenVersion(userId: number): Promise<number | null> {
+    // 🛑 We have bypassed the cache read to ensure instant session invalidation
+    // on logout. If you re-enable this, logout will not reflect until TTL expires.
+
+    /*
     const cached = this.tokenVersionCache.get(userId);
     const now = Date.now();
     if (cached && cached.expiresAt > now) {
       return cached.tokenVersion;
     }
+    */
 
     const user = await this.userService.findById(userId);
     if (!user) {

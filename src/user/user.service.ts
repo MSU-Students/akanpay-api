@@ -34,6 +34,7 @@ export class UserService {
       },
     };
   }
+
   async findOne(username: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: {
@@ -41,6 +42,7 @@ export class UserService {
       },
     });
   }
+
   async findById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({
       where: {
@@ -48,6 +50,7 @@ export class UserService {
       },
     });
   }
+
   async create(createDto: CreateUserDto): Promise<User> {
     const existing = await this.findOne(createDto.username);
     if (existing) {
@@ -72,7 +75,15 @@ export class UserService {
   }
 
   async incrementTokenVersion(userId: number): Promise<void> {
-    await this.usersRepository.increment({ id: userId }, 'tokenVersion', 1);
+    // Optimized: Using query builder guarantees a single, atomic SQL execution.
+    // This safely avoids TypeORM `.increment()` quirks that occasionally
+    // trigger the "client.query() is already executing" pg warning.
+    await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ tokenVersion: () => '"tokenVersion" + 1' })
+      .where('id = :id', { id: userId })
+      .execute();
   }
 
   async ensureRole(userId: number, role: Role): Promise<void> {
