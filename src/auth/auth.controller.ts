@@ -53,8 +53,8 @@ export class AuthController {
   @ApiBearerAuth()
   @Post('logout')
   async logout(@Request() req) {
-    // Explicitly awaiting ensures the DB operations finish completely
-    // before the HTTP response cycle terminates.
+    // Explicitly awaiting this prevents the controller from returning early
+    // which avoids database query collisions in your E2E tests!
     return await this.authService.logout(req.user?.sub);
   }
 
