@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { User } from 'src/entities';
@@ -15,6 +15,24 @@ export class UserService {
 
   async findAll() {
     return this.usersRepository.find();
+  }
+
+  async list(page: number, limit: number) {
+    const take = Math.min(Math.max(limit, 1), 200);
+    const skip = (Math.max(page, 1) - 1) * take;
+    const [data, total] = await this.usersRepository.findAndCount({
+      order: { id: 'ASC' },
+      skip,
+      take,
+    });
+    return {
+      data,
+      meta: {
+        page: Math.max(page, 1),
+        limit: take,
+        total,
+      },
+    };
   }
   async findOne(username: string): Promise<User | null> {
     return this.usersRepository.findOne({
@@ -55,5 +73,16 @@ export class UserService {
 
   async incrementTokenVersion(userId: number): Promise<void> {
     await this.usersRepository.increment({ id: userId }, 'tokenVersion', 1);
+  }
+
+  async ensureRole(userId: number, role: Role): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const roles = user.roles ?? [];
+    if (!roles.includes(role)) {
+      await this.usersRepository.update(userId, { roles: [...roles, role] });
+    }
   }
 }

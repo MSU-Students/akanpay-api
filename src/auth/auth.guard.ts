@@ -19,8 +19,18 @@ type JwtPayload = {
   jti?: string;
 };
 
+type TokenVersionCacheEntry = {
+  tokenVersion: number;
+  expiresAt: number;
+};
+
+const TOKEN_VERSION_TTL_MS = 60_000;
+const TOKEN_VERSION_CACHE_MAX = 10_000;
+
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly tokenVersionCache = new Map<number, TokenVersionCacheEntry>();
+
   constructor(
     private readonly jwtService: JwtService,
     private reflector: Reflector,
@@ -52,13 +62,45 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    const user = await this.userService.findById(payload.sub);
-    if (!user || user.tokenVersion !== payload.tokenVersion) {
+    const tokenVersion = await this.getTokenVersion(payload.sub);
+    if (tokenVersion === null || tokenVersion !== payload.tokenVersion) {
       throw new UnauthorizedException();
     }
 
     request['user'] = payload;
     return true;
+  }
+
+  private async getTokenVersion(userId: number): Promise<number | null> {
+    const cached = this.tokenVersionCache.get(userId);
+    const now = Date.now();
+    if (cached && cached.expiresAt > now) {
+      return cached.tokenVersion;
+    }
+
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      return null;
+    }
+
+    this.setTokenVersionCache(userId, user.tokenVersion);
+    return user.tokenVersion;
+  }
+
+  private setTokenVersionCache(userId: number, tokenVersion: number): void {
+    if (this.tokenVersionCache.size >= TOKEN_VERSION_CACHE_MAX) {
+      const oldestKey = this.tokenVersionCache.keys().next().value as
+        | number
+        | undefined;
+      if (oldestKey !== undefined) {
+        this.tokenVersionCache.delete(oldestKey);
+      }
+    }
+
+    this.tokenVersionCache.set(userId, {
+      tokenVersion,
+      expiresAt: Date.now() + TOKEN_VERSION_TTL_MS,
+    });
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { Role } from 'src/enums';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { VendorUser } from './vendor-user.entity';
 
 @Entity()
 export class User {
@@ -25,4 +26,7 @@ export class User {
     default: [Role.User],
   })
   roles: Role[];
+
+  @OneToMany(() => VendorUser, (vendorUser) => vendorUser.user)
+  vendorUsers: VendorUser[];
 }

@@ -3,3 +3,8 @@ export * from './create-user.dto';
 export * from './refresh-token.dto';
 export * from './user-response.dto';
 export * from './auth-tokens.dto';
+export * from './list-users.dto';
+export * from './create-vendor.dto';
+export * from './add-vendor-user.dto';
+export * from './record-vendor-transaction.dto';
+export * from './poll-vendor-transactions.dto';
