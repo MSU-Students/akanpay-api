@@ -48,7 +48,11 @@ export class VendorController {
     @Body() dto: RecordVendorTransactionDto,
     @Request() req,
   ) {
-    await this.service.assertVendorAccess(req.user?.sub, vendorId, req.user?.roles ?? []);
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
     return this.service.recordTransaction(vendorId, dto);
   }
 
@@ -59,7 +63,11 @@ export class VendorController {
     @Query('reference') reference: string,
     @Request() req,
   ) {
-    await this.service.assertVendorAccess(req.user?.sub, vendorId, req.user?.roles ?? []);
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
     return this.service.verifyTransaction(vendorId, reference);
   }
 
@@ -70,7 +78,11 @@ export class VendorController {
     @Query() query: PollVendorTransactionsDto,
     @Request() req,
   ) {
-    await this.service.assertVendorAccess(req.user?.sub, vendorId, req.user?.roles ?? []);
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
     return this.service.pollTransactions(vendorId, query);
   }
 
@@ -81,7 +93,41 @@ export class VendorController {
     @Query('date') date: string,
     @Request() req,
   ) {
-    await this.service.assertVendorAccess(req.user?.sub, vendorId, req.user?.roles ?? []);
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
     return this.service.getDailySettlementReport(vendorId, date);
+  }
+
+  @Get(':vendorId/settlements/weekly')
+  @Roles(Role.Vendor, Role.Admin)
+  async getWeeklySettlement(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query('date') date: string,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.getWeeklySettlementReport(vendorId, date);
+  }
+
+  @Get(':vendorId/settlements/monthly')
+  @Roles(Role.Vendor, Role.Admin)
+  async getMonthlySettlement(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query('month') month: string,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.getMonthlySettlementReport(vendorId, month);
   }
 }
