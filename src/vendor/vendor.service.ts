@@ -114,7 +114,9 @@ export class VendorService {
       currency: dto.currency ?? 'NGN',
       provider: dto.provider ?? null,
       status: dto.status ?? TransactionStatus.Pending,
-      paidAt: paidAt ?? (dto.status === TransactionStatus.Success ? new Date() : null),
+      paidAt:
+        paidAt ??
+        (dto.status === TransactionStatus.Success ? new Date() : null),
     });
 
     return this.transactionsRepository.save(transaction);
@@ -164,17 +166,7 @@ export class VendorService {
     });
   }
 
-  async getDailySettlementReport(vendorId: number, date: string) {
-    if (!date) {
-      throw new BadRequestException('Date is required');
-    }
-
-    const start = new Date(`${date}T00:00:00.000Z`);
-    const end = new Date(`${date}T23:59:59.999Z`);
-    if (Number.isNaN(start.getTime())) {
-      throw new BadRequestException('Invalid date');
-    }
-
+  private async aggregateSettlement(vendorId: number, start: Date, end: Date) {
     const totals = await this.transactionsRepository
       .createQueryBuilder('transaction')
       .select('COALESCE(SUM(transaction.amount), 0)', 'totalGross')
@@ -189,14 +181,81 @@ export class VendorService {
 
     const totalGross = Number(totals?.totalGross ?? 0);
     const totalFees = Number(totals?.totalFees ?? 0);
-    const transactionCount = Number(totals?.transactionCount ?? 0);
 
     return {
-      date,
       totalGross,
       totalFees,
       totalNet: totalGross - totalFees,
-      transactionCount,
+      transactionCount: Number(totals?.transactionCount ?? 0),
+    };
+  }
+
+  async getDailySettlementReport(vendorId: number, date: string) {
+    if (!date) {
+      throw new BadRequestException('Date is required');
+    }
+
+    const start = new Date(`${date}T00:00:00.000Z`);
+    const end = new Date(`${date}T23:59:59.999Z`);
+    if (Number.isNaN(start.getTime())) {
+      throw new BadRequestException('Invalid date');
+    }
+
+    return { date, ...(await this.aggregateSettlement(vendorId, start, end)) };
+  }
+
+  async getWeeklySettlementReport(vendorId: number, date: string) {
+    if (!date) {
+      throw new BadRequestException('Date is required');
+    }
+
+    const ref = new Date(`${date}T00:00:00.000Z`);
+    if (Number.isNaN(ref.getTime())) {
+      throw new BadRequestException('Invalid date');
+    }
+
+    // Monday-of-week (ISO): getUTCDay() is 0=Sun..6=Sat
+    const diffToMonday = (ref.getUTCDay() + 6) % 7;
+    const start = new Date(ref);
+    start.setUTCDate(ref.getUTCDate() - diffToMonday);
+    const end = new Date(start);
+    end.setUTCDate(start.getUTCDate() + 6);
+    end.setUTCHours(23, 59, 59, 999);
+
+    return {
+      period: 'weekly',
+      weekStart: start.toISOString().slice(0, 10),
+      weekEnd: end.toISOString().slice(0, 10),
+      ...(await this.aggregateSettlement(vendorId, start, end)),
+    };
+  }
+
+  async getMonthlySettlementReport(vendorId: number, month: string) {
+    if (!month) {
+      throw new BadRequestException('Month is required');
+    }
+
+    const start = new Date(`${month}-01T00:00:00.000Z`);
+    if (Number.isNaN(start.getTime())) {
+      throw new BadRequestException('Invalid month (expected YYYY-MM)');
+    }
+
+    const end = new Date(
+      Date.UTC(
+        start.getUTCFullYear(),
+        start.getUTCMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      ),
+    );
+
+    return {
+      period: 'monthly',
+      month,
+      ...(await this.aggregateSettlement(vendorId, start, end)),
     };
   }
 }
