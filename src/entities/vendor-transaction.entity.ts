@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Vendor } from './vendor.entity';
 import { TransactionStatus } from 'src/enums';
+import { User } from './user.entity';
 
 @Entity()
 @Index('IDX_vendor_transaction_vendor_updated', ['vendorId', 'updatedAt'])
@@ -19,6 +20,7 @@ import { TransactionStatus } from 'src/enums';
   'updatedAt',
 ])
 @Index('IDX_vendor_transaction_vendor_paid', ['vendorId', 'paidAt'])
+@Index('IDX_vendor_transaction_student_created', ['studentId', 'createdAt'])
 export class VendorTransaction {
   @PrimaryGeneratedColumn()
   id: number;
@@ -31,6 +33,13 @@ export class VendorTransaction {
   })
   @JoinColumn({ name: 'vendorId' })
   vendor: Vendor;
+
+  @Column({ nullable: true })
+  studentId: number | null;
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'studentId' })
+  student: User | null;
 
   @Column({ unique: true })
   reference: string;

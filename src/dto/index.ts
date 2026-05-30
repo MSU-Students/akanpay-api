@@ -8,3 +8,8 @@ export * from './create-vendor.dto';
 export * from './add-vendor-user.dto';
 export * from './record-vendor-transaction.dto';
 export * from './poll-vendor-transactions.dto';
+export * from './wallet-response.dto';
+export * from './wallet-payment.dto';
+export * from './wallet-transaction-query.dto';
+export * from './settle-transaction.dto';
+export * from './verify-student.dto';

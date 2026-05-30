@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/dto/create-user.dto';
-import { User } from 'src/entities';
+import { User, Wallet } from 'src/entities';
 import { Role } from 'src/enums';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -11,6 +11,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Wallet)
+    private walletsRepository: Repository<Wallet>,
   ) {}
 
   async findAll() {
@@ -62,7 +64,15 @@ export class UserService {
       password: passwordHash,
       roles: [Role.User],
     });
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    const wallet = this.walletsRepository.create({
+      userId: saved.id,
+      availableBalance: 0,
+      pendingBalance: 0,
+      currency: 'NGN',
+    });
+    await this.walletsRepository.save(wallet);
+    return saved;
   }
 
   async setRefreshToken(userId: number, refreshToken: string): Promise<void> {
@@ -95,5 +105,18 @@ export class UserService {
     if (!roles.includes(role)) {
       await this.usersRepository.update(userId, { roles: [...roles, role] });
     }
+  }
+
+  async verifyStudent(
+    userId: number,
+    dto: { akanProfileId: string; enrollmentStatus?: string },
+  ) {
+    const user = await this.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    user.akanProfileId = dto.akanProfileId;
+    user.enrollmentStatus = dto.enrollmentStatus ?? 'enrolled';
+    user.isStudentVerified = true;
+    return this.usersRepository.save(user);
   }
 }
