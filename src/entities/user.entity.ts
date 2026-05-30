@@ -1,7 +1,8 @@
 import { Exclude } from 'class-transformer';
 import { Role } from 'src/enums';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { VendorUser } from './vendor-user.entity';
+import { Wallet } from './wallet.entity';
 
 @Entity()
 export class User {
@@ -19,6 +20,12 @@ export class User {
   refreshTokenHash: string | null;
   @Column({ type: 'int', default: 0 })
   tokenVersion: number;
+  @Column({ type: 'varchar', nullable: true })
+  akanProfileId: string | null;
+  @Column({ type: 'varchar', nullable: true })
+  enrollmentStatus: string | null;
+  @Column({ type: 'boolean', default: false })
+  isStudentVerified: boolean;
   @Column({
     type: 'enum',
     enum: Role,
@@ -29,4 +36,7 @@ export class User {
 
   @OneToMany(() => VendorUser, (vendorUser) => vendorUser.user)
   vendorUsers: VendorUser[];
+
+  @OneToOne(() => Wallet, (wallet) => wallet.user)
+  wallet: Wallet;
 }
