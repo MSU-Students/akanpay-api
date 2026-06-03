@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserDto } from 'src/dto/create-user.dto';
+import { CreateUserDto } from 'src/vendor/dto/create-user.dto';
 import { User } from 'src/entities';
 import { Role } from 'src/enums';
 import { Repository } from 'typeorm';

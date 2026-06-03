@@ -8,11 +8,14 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards';
 import { AuthGuard } from './auth/auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities';
+import { User, Vendor } from './entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { VendorModule } from './vendor/vendor.module';
+import { VendorTransactionModule } from './vendor/vendor-transaction.module';
+import { Transaction } from './entities/transaction.entity';
+import { SettlementReport } from './entities/settlement-report.entity';
 
 @Module({
   imports: [
@@ -81,7 +84,7 @@ import { VendorModule } from './vendor/vendor.module';
           username: config.getOrThrow<string>('DB_USER'),
           password: config.getOrThrow<string>('DB_PASSWORD'),
           database: config.getOrThrow<string>('DB_NAME'),
-          entities: [User],
+          entities: [User, Vendor, Transaction, SettlementReport],
           synchronize: dbSync,
           migrations: ['dist/migrations/*.js'],
           migrationsRun: migrationsRun && !dbSync,
@@ -92,6 +95,7 @@ import { VendorModule } from './vendor/vendor.module';
     AuthModule,
     HealthModule,
     VendorModule,
+    VendorTransactionModule, // 👈 added
   ],
   controllers: [AppController],
   providers: [

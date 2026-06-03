@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { UserService } from './user.service';
 import { Roles } from 'src/decorators';
 import { Role } from 'src/enums';
-import { CreateUserDto, UserResponseDto } from 'src/dto';
+import { CreateUserDto, UserResponseDto } from 'src/vendor/dto';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 
 @ApiBearerAuth()

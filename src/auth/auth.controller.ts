@@ -13,7 +13,7 @@ import {
   CreateUserDto,
   LoginDto,
   RefreshTokenDto,
-} from 'src/dto';
+} from 'src/vendor/dto';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { Anonymous } from 'src/decorators';
 import { Throttle } from '@nestjs/throttler';

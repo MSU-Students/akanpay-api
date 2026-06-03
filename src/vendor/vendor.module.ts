@@ -2,19 +2,25 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VendorController } from './vendor.controller';
 import { VendorService } from './vendor.service';
-import { Vendor } from '..//entities/vendor.entity';
-// ⬇️ Import the CryptoService directly from common instead ⬇️
-import { CryptoService } from '../common/crypto.service'; 
+import { Vendor } from '../entities/vendor.entity';
+import { Transaction } from '../entities/transaction.entity';
+import { SettlementReport } from '../entities/settlement-report.entity';
+import { CryptoService } from '../common/crypto.service';
+import { VendorTransactionController } from './vendor-transaction.controller';
+import { VendorTransactionService } from './vendor-transaction.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Vendor]),
-    // ❌ Remove SecurityModule from here if you didn't create a separate module file
+    TypeOrmModule.forFeature([Vendor, Transaction, SettlementReport]), // 👈 added
   ],
-  controllers: [VendorController],
+  controllers: [
+    VendorController,
+    VendorTransactionController, // 👈 added
+  ],
   providers: [
-    VendorService, 
-    CryptoService // 👈 Add this here so VendorService can access it locally
+    VendorService,
+    CryptoService,
+    VendorTransactionService, // 👈 added
   ],
   exports: [VendorService],
 })
