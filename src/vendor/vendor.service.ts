@@ -29,6 +29,20 @@ export class VendorService {
     private readonly userService: UserService,
   ) {}
 
+  async findAll(): Promise<Vendor[]> {
+    return this.vendorsRepository.find();
+  }
+
+  async findOne(id: number): Promise<Vendor> {
+    const vendor = await this.vendorsRepository.findOne({
+      where: { id },
+    });
+    if (!vendor) {
+      throw new NotFoundException('Vendor not found');
+    }
+    return vendor;
+  }
+
   async createVendor(dto: CreateVendorDto) {
     const existing = await this.vendorsRepository.findOne({
       where: { name: dto.name },
