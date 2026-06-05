@@ -1,25 +1,47 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity()
+@Entity('vendors')
 export class Vendor {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column()
-  name: string;
+  @Column({ type: 'varchar', length: 255 })
+  businessName: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 50, unique: true })
+  vendorCode: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  ownerName: string;
+
+  @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column({ nullable: true })
-  phone: string | null;
+  @Column({ type: 'varchar', length: 255 })
+  passwordHash: string;
 
-  @Column({ nullable: true })
-  address: string | null;
+  @Column({ type: 'varchar', length: 50, default: 'PENDING' })
+  status: string;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column({ type: 'varchar', length: 20, default: 'VENDOR' })
+  role: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  /* =======================================================
+     DATABASE SECURITY REQUIREMENT: Encryption at Rest
+     GCash number is stored as AES-256-GCM ciphertext.
+     ======================================================= */
+  @Column({ type: 'text' })
+  encryptedGcashNumber: string;
+
+  @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

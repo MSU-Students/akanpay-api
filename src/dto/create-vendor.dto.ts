@@ -1,23 +1,48 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class CreateVendorDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'MSU Canteen' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  @Length(3, 255)
+  businessName: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: 'MSU-CAF-01',
+    description: 'University vendor code format e.g. MSU-CAF-01',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^MSU-[A-Z0-9]{3,4}-\d{2}$/, {
+    message: 'Vendor code must follow the university format (e.g., MSU-CAF-01)',
+  })
+  vendorCode: string;
+
+  @ApiProperty({ example: 'Juan Dela Cruz' })
+  @IsString()
+  @IsNotEmpty()
+  ownerName: string;
+
+  @ApiProperty({ example: 'vendor@msu.edu.ph' })
   @IsEmail()
   email: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty({ description: 'Min 8 characters' })
   @IsString()
-  @IsOptional()
-  phone?: string;
+  @Length(8, 100, { message: 'Password must be between 8 and 100 characters long' })
+  password: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty({ example: '09171234567', description: 'Valid GCash number' })
   @IsString()
-  @IsOptional()
-  address?: string;
+  @Matches(/^(09|\+639)\d{9}$/, {
+    message: 'Please provide a valid GCash mobile number (e.g., 09171234567)',
+  })
+  gcashNumber: string;
 }
