@@ -22,7 +22,12 @@ describe('VendorService', () => {
     andWhere: jest.Mock;
     getRawOne: jest.Mock;
   };
-  let vendorsRepo: { findOne: jest.Mock; create: jest.Mock; save: jest.Mock };
+  let vendorsRepo: {
+    findOne: jest.Mock;
+    find: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+  };
   let vendorUsersRepo: {
     findOne: jest.Mock;
     create: jest.Mock;
@@ -50,7 +55,12 @@ describe('VendorService', () => {
     const echo = jest.fn((entity) => entity);
     const persist = jest.fn((entity) => Promise.resolve({ id: 1, ...entity }));
 
-    vendorsRepo = { findOne: jest.fn(), create: echo, save: persist };
+    vendorsRepo = {
+      findOne: jest.fn(),
+      find: jest.fn(),
+      create: echo,
+      save: persist,
+    };
     vendorUsersRepo = {
       findOne: jest.fn(),
       create: jest.fn((entity) => entity),
@@ -90,6 +100,38 @@ describe('VendorService', () => {
     expect(service).toBeDefined();
   });
 
+  describe('findAll', () => {
+    it('returns all vendors', async () => {
+      const mockVendors = [
+        { id: 1, name: 'Vendor 1', campus: 'Campus A' },
+        { id: 2, name: 'Vendor 2', campus: 'Campus B' },
+      ];
+      vendorsRepo.find.mockResolvedValue(mockVendors);
+
+      const result = await service.findAll();
+      expect(result).toEqual(mockVendors);
+      expect(vendorsRepo.find).toHaveBeenCalled();
+    });
+  });
+
+  describe('findOne', () => {
+    it('returns a vendor by id', async () => {
+      const mockVendor = { id: 1, name: 'Vendor 1', campus: 'Campus A' };
+      vendorsRepo.findOne.mockResolvedValue(mockVendor);
+
+      const result = await service.findOne(1);
+      expect(result).toEqual(mockVendor);
+      expect(vendorsRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+    });
+
+    it('throws NotFoundException when the vendor is not found', async () => {
+      vendorsRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+      expect(vendorsRepo.findOne).toHaveBeenCalledWith({ where: { id: 999 } });
+    });
+  });
+
   describe('createVendor', () => {
     it('rejects a duplicate vendor name', async () => {
       vendorsRepo.findOne.mockResolvedValue({ id: 1, name: 'Cafe' });
@@ -112,26 +154,26 @@ describe('VendorService', () => {
   describe('addUserToVendor', () => {
     it('throws when the vendor does not exist', async () => {
       vendorsRepo.findOne.mockResolvedValue(null);
-      await expect(
-        service.addUserToVendor(1, { userId: 5 }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.addUserToVendor(1, { userId: 5 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws when the user does not exist', async () => {
       vendorsRepo.findOne.mockResolvedValue({ id: 1 });
       userService.findById.mockResolvedValue(null);
-      await expect(
-        service.addUserToVendor(1, { userId: 5 }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.addUserToVendor(1, { userId: 5 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws when the user is already assigned', async () => {
       vendorsRepo.findOne.mockResolvedValue({ id: 1 });
       userService.findById.mockResolvedValue({ id: 5 });
       vendorUsersRepo.findOne.mockResolvedValue({ id: 9 });
-      await expect(
-        service.addUserToVendor(1, { userId: 5 }),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.addUserToVendor(1, { userId: 5 })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('links the user and grants the vendor role', async () => {

@@ -24,6 +24,20 @@ import { VendorService } from './vendor.service';
 export class VendorController {
   constructor(private readonly service: VendorService) {}
 
+  @Get()
+  @Roles(Role.User, Role.Vendor, Role.Admin)
+  @ApiOkResponse({ description: 'List of all registered vendors' })
+  findAll() {
+    return this.service.findAll();
+  }
+
+  @Get(':vendorId')
+  @Roles(Role.User, Role.Vendor, Role.Admin)
+  @ApiOkResponse({ description: 'Vendor details' })
+  findOne(@Param('vendorId', ParseIntPipe) vendorId: number) {
+    return this.service.findOne(vendorId);
+  }
+
   @Post()
   @Roles(Role.Admin)
   @ApiOkResponse({ description: 'Vendor created' })
