@@ -13,4 +13,14 @@ export class UserResponseDto {
 
   @ApiProperty({ enum: Role, isArray: true })
   roles: Role[];
+
+  @ApiProperty({ required: false })
+  akanProfileId?: string;
+
+  @ApiProperty({ required: false })
+  enrollmentStatus?: string;
+
+  @ApiProperty({ required: false })
+  isStudentVerified?: boolean;
 }
+
