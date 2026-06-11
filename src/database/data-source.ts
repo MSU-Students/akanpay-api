@@ -1,7 +1,15 @@
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import * as path from 'path';
-import { User, Vendor, VendorTransaction, VendorUser, Wallet } from '../entities';
+import {
+  User,
+  Vendor,
+  VendorTransaction,
+  VendorUser,
+  Wallet,
+  WalletLedgerEntry,
+} from '../entities';
+import { AuditLog } from '../wallet/audit-log.entity';
 
 config();
 
@@ -18,7 +26,15 @@ export default new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, Vendor, VendorUser, VendorTransaction, Wallet],
+  entities: [
+    User,
+    Vendor,
+    VendorUser,
+    VendorTransaction,
+    Wallet,
+    WalletLedgerEntry,
+    AuditLog,
+  ],
   migrations: [migrationsDir],
   synchronize: dbSync,
 });

@@ -1,12 +1,10 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { AuditService } from './audit.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { Request } from 'express';
+import { Roles } from 'src/decorators';
+import { Role } from 'src/enums';
 
 @Controller('audit')
-@UseGuards(JwtAuthGuard)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
@@ -15,8 +13,8 @@ export class AuditController {
    * Returns audit logs belonging specifically to the authenticated user.
    */
   @Get('my-logs')
-  async getMyLogs(@Req() req: Request & { user: { id: string } }) {
-    const userId = req.user.id;
+  async getMyLogs(@Req() req: Request & { user: { sub: number } }) {
+    const userId = String(req.user.sub);
     return await this.auditService.getUserLogs(userId);
   }
 
@@ -25,8 +23,7 @@ export class AuditController {
    * Returns all audit logs in the system. Restricted to users with the 'admin' role.
    */
   @Get('admin/logs')
-  @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles(Role.Admin)
   async getAdminLogs() {
     return await this.auditService.getAllLogs();
   }
