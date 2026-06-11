@@ -3,3 +3,4 @@ export * from './vendor.entity';
 export * from './vendor-user.entity';
 export * from './vendor-transaction.entity';
 export * from './wallet.entity';
+export * from './wallet-ledger-entry.entity';

@@ -1,8 +1,20 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from 'src/decorators';
 import { Role } from 'src/enums';
-import { SettleTransactionDto, VerifyStudentDto } from 'src/dto';
+import {
+  SettleTransactionDto,
+  VerifyStudentDto,
+  WalletTopUpDto,
+} from 'src/dto';
 import { WalletService } from './wallet.service';
 import { UserService } from 'src/user/user.service';
 
@@ -21,6 +33,15 @@ export class WalletAdminController {
     @Body() dto: VerifyStudentDto,
   ) {
     return this.userService.verifyStudent(id, dto);
+  }
+
+  @Post('students/:id/wallet/top-up')
+  @Roles(Role.Admin)
+  async topUpWallet(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: WalletTopUpDto,
+  ) {
+    return this.walletService.topUpWallet(id, dto);
   }
 
   @Post('transactions/:id/settle')

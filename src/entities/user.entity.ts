@@ -1,8 +1,15 @@
 import { Exclude } from 'class-transformer';
 import { Role } from 'src/enums';
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { VendorUser } from './vendor-user.entity';
 import { Wallet } from './wallet.entity';
+import { WalletLedgerEntry } from './wallet-ledger-entry.entity';
 
 @Entity()
 export class User {
@@ -39,4 +46,7 @@ export class User {
 
   @OneToOne(() => Wallet, (wallet) => wallet.user)
   wallet: Wallet;
+
+  @OneToMany(() => WalletLedgerEntry, (entry) => entry.user)
+  walletLedgerEntries: WalletLedgerEntry[];
 }

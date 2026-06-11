@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { Roles } from 'src/decorators';
 import { Role } from 'src/enums';
 import {
+  WalletLedgerQueryDto,
   WalletPaymentDto,
   WalletResponseDto,
   WalletTransactionQueryDto,
@@ -33,6 +34,12 @@ export class WalletController {
     @Query() query: WalletTransactionQueryDto,
   ) {
     return this.walletService.listTransactions(req.user?.sub, query);
+  }
+
+  @Get('ledger')
+  @Roles(Role.User)
+  async listLedger(@Request() req, @Query() query: WalletLedgerQueryDto) {
+    return this.walletService.listLedgerEntries(req.user?.sub, query);
   }
 
   @Post('pay')
