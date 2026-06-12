@@ -2,42 +2,29 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { VendorUser } from './vendor-user.entity';
+import { VendorTransaction } from './vendor-transaction.entity';
 
-@Entity('vendors')
+@Entity()
 export class Vendor {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  businessName: string;
+  @Column({ unique: true })
+  name: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true })
-  vendorCode: string;
+  @Column({ type: 'varchar', nullable: true })
+  campus: string | null;
 
-  @Column({ type: 'varchar', length: 255 })
-  ownerName: string;
+  @OneToMany(() => VendorUser, (vendorUser) => vendorUser.vendor)
+  users: VendorUser[];
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  email: string;
-
-  @Column({ type: 'varchar', length: 255 })
-  passwordHash: string;
-
-  @Column({ type: 'varchar', length: 50, default: 'PENDING' })
-  status: string;
-
-  @Column({ type: 'varchar', length: 20, default: 'VENDOR' })
-  role: string;
-
-  /* =======================================================
-     DATABASE SECURITY REQUIREMENT: Encryption at Rest
-     GCash number is stored as AES-256-GCM ciphertext.
-     ======================================================= */
-  @Column({ type: 'text' })
-  encryptedGcashNumber: string;
+  @OneToMany(() => VendorTransaction, (transaction) => transaction.vendor)
+  transactions: VendorTransaction[];
 
   @CreateDateColumn()
   createdAt: Date;

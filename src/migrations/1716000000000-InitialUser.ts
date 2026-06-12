@@ -4,11 +4,22 @@ export class InitialUser1716000000000 implements MigrationInterface {
   name = 'InitialUser1716000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `CREATE TYPE "public"."user_roles_enum" AS ENUM('user', 'admin')`,
-    );
     await queryRunner.query(`
-      CREATE TABLE "user" (
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM pg_type t
+          JOIN pg_enum e ON t.oid = e.enumtypid
+          WHERE t.typname = 'user_roles_enum'
+        ) THEN
+          CREATE TYPE "public"."user_roles_enum" AS ENUM('user', 'admin');
+        END IF;
+      END $$;
+    `);
+
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS "user" (
         "id" SERIAL NOT NULL,
         "name" character varying NOT NULL,
         "username" character varying NOT NULL,
@@ -23,7 +34,7 @@ export class InitialUser1716000000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "user"`);
-    await queryRunner.query(`DROP TYPE "public"."user_roles_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "user"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "public"."user_roles_enum"`);
   }
 }

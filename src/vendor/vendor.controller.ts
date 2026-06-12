@@ -1,66 +1,147 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
-  HttpStatus,
   Param,
   ParseIntPipe,
-  Patch,
   Post,
+  Query,
+  Request,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
-import { plainToInstance } from 'class-transformer';
 import { Roles } from 'src/decorators';
-import { CreateVendorDto, UpdateVendorDto, VendorResponseDto } from 'src/dto';
 import { Role } from 'src/enums';
+import {
+  AddVendorUserDto,
+  CreateVendorDto,
+  PollVendorTransactionsDto,
+  RecordVendorTransactionDto,
+} from 'src/dto';
 import { VendorService } from './vendor.service';
 
 @ApiBearerAuth()
-@Controller('vendor')
+@Controller('vendors')
 export class VendorController {
   constructor(private readonly service: VendorService) {}
 
   @Get()
-  @Roles(Role.User, Role.Admin)
-  @ApiOkResponse({ type: VendorResponseDto, isArray: true })
-  async findAll() {
-    const vendors = await this.service.findAll();
-    return vendors.map((v) => plainToInstance(VendorResponseDto, v));
+  @Roles(Role.User, Role.Vendor, Role.Admin)
+  @ApiOkResponse({ description: 'List of all registered vendors' })
+  findAll() {
+    return this.service.findAll();
   }
 
-  @Get(':id')
-  @Roles(Role.User, Role.Admin)
-  @ApiOkResponse({ type: VendorResponseDto })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const vendor = await this.service.findOne(id);
-    return plainToInstance(VendorResponseDto, vendor);
+  @Get(':vendorId')
+  @Roles(Role.User, Role.Vendor, Role.Admin)
+  @ApiOkResponse({ description: 'Vendor details' })
+  findOne(@Param('vendorId', ParseIntPipe) vendorId: number) {
+    return this.service.findOne(vendorId);
   }
 
   @Post()
   @Roles(Role.Admin)
-  @ApiOkResponse({ type: VendorResponseDto })
-  async create(@Body() createDto: CreateVendorDto) {
-    const vendor = await this.service.create(createDto);
-    return plainToInstance(VendorResponseDto, vendor);
+  @ApiOkResponse({ description: 'Vendor created' })
+  createVendor(@Body() dto: CreateVendorDto) {
+    return this.service.createVendor(dto);
   }
 
-  @Patch(':id')
+  @Post(':vendorId/users')
   @Roles(Role.Admin)
-  @ApiOkResponse({ type: VendorResponseDto })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateVendorDto,
+  @ApiOkResponse({ description: 'Vendor user linked' })
+  addVendorUser(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Body() dto: AddVendorUserDto,
   ) {
-    const vendor = await this.service.update(id, updateDto);
-    return plainToInstance(VendorResponseDto, vendor);
+    return this.service.addUserToVendor(vendorId, dto);
   }
 
-  @Delete(':id')
-  @Roles(Role.Admin)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.service.remove(id);
+  @Post(':vendorId/transactions')
+  @Roles(Role.Vendor, Role.Admin)
+  async recordTransaction(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Body() dto: RecordVendorTransactionDto,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.recordTransaction(vendorId, dto);
+  }
+
+  @Get(':vendorId/transactions/verify')
+  @Roles(Role.Vendor, Role.Admin)
+  async verifyTransaction(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query('reference') reference: string,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.verifyTransaction(vendorId, reference);
+  }
+
+  @Get(':vendorId/transactions/poll')
+  @Roles(Role.Vendor, Role.Admin)
+  async pollTransactions(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query() query: PollVendorTransactionsDto,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.pollTransactions(vendorId, query);
+  }
+
+  @Get(':vendorId/settlements/daily')
+  @Roles(Role.Vendor, Role.Admin)
+  async getDailySettlement(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query('date') date: string,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.getDailySettlementReport(vendorId, date);
+  }
+
+  @Get(':vendorId/settlements/weekly')
+  @Roles(Role.Vendor, Role.Admin)
+  async getWeeklySettlement(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query('date') date: string,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.getWeeklySettlementReport(vendorId, date);
+  }
+
+  @Get(':vendorId/settlements/monthly')
+  @Roles(Role.Vendor, Role.Admin)
+  async getMonthlySettlement(
+    @Param('vendorId', ParseIntPipe) vendorId: number,
+    @Query('month') month: string,
+    @Request() req,
+  ) {
+    await this.service.assertVendorAccess(
+      req.user?.sub,
+      vendorId,
+      req.user?.roles ?? [],
+    );
+    return this.service.getMonthlySettlementReport(vendorId, month);
   }
 }

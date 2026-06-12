@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f7f1e7;
+  --surface: #fffaf2;
+  --surface-strong: #f4ede3;
+  --text: #1e2621;
+  --muted: #5c6f64;
+  --border: rgba(30, 38, 33, 0.12);
+  --accent: #145040;
+  --shadow: 0 14px 40px rgba(20, 80, 64, 0.12);
+
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(
+      1200px 700px at 20% -10%,
+      rgba(20, 80, 64, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 90% 10%,
+      rgba(240, 177, 91, 0.18),
+      transparent 70%
+    ),
+    var(--bg);
+}
+
+#root {
+  min-height: 100vh;
+  animation: fadeIn 0.6s ease-out;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--text);
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+code {
+  font-family: var(--mono);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
